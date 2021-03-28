@@ -1,9 +1,9 @@
 TEST?=$$(go list ./... | grep -v 'vendor')
-HOSTNAME=hashicorp.com
-NAMESPACE=edu
-NAME=hashicups
+HOSTNAME=trendmicro.com
+NAMESPACE=cloudone
+NAME=conformity
 BINARY=terraform-provider-${NAME}
-VERSION=0.2
+VERSION=0.3
 OS_ARCH=darwin_amd64
 
 default: install
@@ -28,6 +28,7 @@ release:
 install: build
 	mkdir -p ~/.terraform.d/plugins/${HOSTNAME}/${NAMESPACE}/${NAME}/${VERSION}/${OS_ARCH}
 	mv ${BINARY} ~/.terraform.d/plugins/${HOSTNAME}/${NAMESPACE}/${NAME}/${VERSION}/${OS_ARCH}
+	sed -i -e '/hashes/,/]/d' examples/.terraform.lock.hcl
 
 test: 
 	go test -i $(TEST) || exit 1                                                   

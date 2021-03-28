@@ -1,20 +1,23 @@
 terraform {
   required_providers {
-    hashicups = {
-      version = "0.2"
-      source  = "hashicorp.com/edu/hashicups"
+    conformity = {
+      version = "0.3"
+      source  = "trendmicro.com/cloudone/conformity"
     }
   }
 }
 
-provider "hashicups" {}
+provider "conformity" {
+  region = "ap-southeast-2"
+  auth_token = <authtoken>
+}
 
 module "psl" {
-  source = "./coffee"
+  source = "./group"
 
-  coffee_name = "Packer Spiced Latte"
+  group_name = "AmitTest"
 }
 
 output "psl" {
-  value = module.psl.coffee
+  value = module.psl.group
 }
