@@ -1,16 +1,19 @@
 package conformity
 
 import (
-	"log"
-	"net/http"
-
+	"context"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
+	"net/http"
+	"terraform-provider-conformity/conformity/groups"
+	"terraform-provider-conformity/conformity/models"
+	"terraform-provider-conformity/conformity/provider"
 )
 
 // Provider -
 func Provider() *schema.Provider {
 	return &schema.Provider{
-		ConfigureFunc: providerConfigure,
+		ConfigureContextFunc: providerConfigure,
 		Schema: map[string]*schema.Schema{
 			"region": {
 				Type:        schema.TypeString,
@@ -23,41 +26,26 @@ func Provider() *schema.Provider {
 				Sensitive: true,
 			},
 		},
-		ResourcesMap: map[string]*schema.Resource{},
+		ResourcesMap: map[string]*schema.Resource{
+			"conformity_group": groups.ResourceGroup(),
+		},
 		DataSourcesMap: map[string]*schema.Resource{
-			"conformity_groups": dataSourceGroups(),
+			"conformity_groups": groups.DataSourceGroups(),
 		},
 	}
 }
 
-func marshalData(d *schema.ResourceData, vals map[string]interface{}) {
-	for k, v := range vals {
-		if k == "id" {
-			d.SetId(v.(string))
-		} else {
-			str, ok := v.(string)
-			if ok {
-				d.Set(k, str)
-			} else {
-				d.Set(k, v)
-			}
-		}
-	}
-}
-
-func providerConfigure(d *schema.ResourceData) (interface{}, error) {
-	log.Println("[DEBUG] Something happened!")
+func providerConfigure(ctx context.Context, d *schema.ResourceData) (interface{}, diag.Diagnostics) {
 	region := d.Get("region").(string)
-	if region == "" {
-		log.Println("Defaulting environment in URL config to use default region ap-southeast-1")
-	}
+	token := d.Get("auth_token").(string)
 
-	authToken := d.Get("auth_token").(string)
+	// Warning or errors can be collected in a slice type
+	var diags diag.Diagnostics
 
 	h := make(http.Header)
-	h.Set("Content-Type", "application/json")
+	h.Set("Content-Type", "application/vnd.api+json")
 	h.Set("Accept", "application/json")
-	h.Set("Authorization", authToken)
+	h.Set("Authorization", "ApiKey "+token)
 
 	headers, exists := d.GetOk("headers")
 	if exists {
@@ -66,21 +54,11 @@ func providerConfigure(d *schema.ResourceData) (interface{}, error) {
 		}
 	}
 
-	return newProviderClient(region, authToken, h)
-}
-
-type ProviderClient struct {
-	Region    string
-	AuthToken string
-	Client    *Client
-}
-
-func newProviderClient(region, authToken string, headers http.Header) (ProviderClient, error) {
-	p := ProviderClient{
+	p := models.ProviderClient{
 		Region:    region,
-		AuthToken: authToken,
+		AuthToken: token,
 	}
-	p.Client = NewClient(headers, region, authToken)
+	p.Client = provider.NewClient(h, &region, &token)
 
-	return p, nil
+	return p, diags
 }

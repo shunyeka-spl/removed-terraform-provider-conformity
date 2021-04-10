@@ -1,16 +1,17 @@
-package conformity
+package groups
 
 import (
 	"context"
 	"log"
 	"strconv"
+	"terraform-provider-conformity/conformity/models"
 	"time"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 )
 
-func dataSourceGroups() *schema.Resource {
+func DataSourceGroups() *schema.Resource {
 	return &schema.Resource{
 		ReadContext: dataSourceGroupsRead,
 		Schema: map[string]*schema.Schema{
@@ -79,11 +80,11 @@ func dataSourceGroups() *schema.Resource {
 
 func dataSourceGroupsRead(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
 	log.Println("[DEBUG] Something happened twice!")
-	provider := m.(ProviderClient)
+	provider := m.(models.ProviderClient)
 	client := provider.Client
 	var diags diag.Diagnostics
-
-	groups, err := client.doGetGroups(client.BaseUrl.String())
+	gs := GetGroupService(client)
+	groups, err := gs.DoGetGroups(client.BaseUrl.String())
 	log.Printf("Raw output2: %v\n", groups)
 	if err != nil {
 		return diag.FromErr(err)

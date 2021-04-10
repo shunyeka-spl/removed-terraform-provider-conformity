@@ -62,3 +62,6 @@ override.tf.json
 .terraformrc
 terraform.rc
 terraform
+examples/.terraform.lock.hcl
+examples/.terraform.lock.hcl-e
+.idea

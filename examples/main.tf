@@ -7,9 +7,13 @@ terraform {
   }
 }
 
+variable "auth_token" {
+  default = ""
+}
+
 provider "conformity" {
   region = "ap-southeast-2"
-  auth_token = <authtoken>
+  auth_token = var.auth_token
 }
 
 module "psl" {
@@ -18,6 +22,6 @@ module "psl" {
   group_name = "AmitTest"
 }
 
-output "psl" {
-  value = module.psl.group
-}
+//output "psl" {
+//  value = module.psl.group
+//}

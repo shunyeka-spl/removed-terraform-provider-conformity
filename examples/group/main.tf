@@ -12,14 +12,19 @@ variable "group_name" {
   default = "TestAmit"
 }
 
+resource "conformity_group" "grp6" {
+  name = "hellotest3"
+  tags = ["h", "j"]
+}
+
 data "conformity_groups" "all" {}
 
 # Returns all groups
 output "all_groups" {
-  value = data.conformity_groups.all.groups
+   value = data.conformity_groups.all.groups
 }
 
-# Only returns packer spiced latte
-output "group" {
-  value = data.conformity_groups.all
-}
+# # Only returns packer spiced latte
+//output "group" {
+//  value = data.conformity_groups.all
+//}
